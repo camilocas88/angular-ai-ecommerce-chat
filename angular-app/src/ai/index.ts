@@ -8,7 +8,6 @@ require('dotenv').config();
 // configure a Genkit instance
 const ai = genkit({
   plugins: [googleAI()],
-  model: googleAI.model('gemini-2.0-flash'), // set default model
 });
 
 const tool = ai.defineTool(addToCartTool, addToCartToolFn);
@@ -210,6 +209,7 @@ REMEMBER: RESPOND ONLY IN ENGLISH.`;
     console.log('👤 Effective user profile:', effectiveUserProfile);
 
     const { text, toolRequests } = await ai.generate({
+      model: 'googleai/gemini-2.0-flash-exp',
       prompt: `${basePrompt}\n\nUser: ${prompt}`,
       tools: effectiveUserProfile.isNewUser ? [] : [tool], // No tools para usuarios nuevos sin nombre
       returnToolRequests: true,
