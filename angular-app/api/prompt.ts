@@ -1,13 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { promptModel } from '../angular-app/src/ai/index';
 
-// Storage en memoria para nombres de usuario (en producción usarías una base de datos)
-let userProfile = {
-  name: '',
-  isNewUser: true,
-  conversationCount: 0
-};
-
+// Simple response for basic deployment
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -33,39 +26,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Incrementar contador de conversación
-    userProfile.conversationCount++;
-
-    // Usar nombre guardado o nombre genérico
-    const userName = userProfile.name || 'Usuario';
-
-    console.log(`🤖 Processing prompt: "${prompt}" for ${userName} (${tech})`);
-    console.log(`👤 User profile BEFORE:`, JSON.stringify(userProfile, null, 2));
-
-    const response = await promptModel(prompt as string, userName, tech as 'angular' | 'react', userProfile);
-
-    // Logging detallado de la respuesta
-    console.log('🔍 AI Response:', JSON.stringify(response, null, 2));
-
-    if (response.action) {
-      console.log('✅ Action detected:', response.action.type, response.action.params);
-    } else {
-      console.log('ℹ️ No action in response');
-    }
-
-    // CRITICAL: Verificar si la IA detectó un nombre en la respuesta
-    if (response.userName && response.userName !== userName) {
-      console.log(`📝 AI detected name: "${response.userName}" (current: "${userName}")`);
-      console.log(`🔄 UPDATING GLOBAL USER PROFILE...`);
-
-      // ACTUALIZAR EL PERFIL GLOBAL DEL SERVIDOR
-      userProfile.name = response.userName;
-      userProfile.isNewUser = false;
-
-      console.log(`👤 User profile AFTER update:`, JSON.stringify(userProfile, null, 2));
-    } else {
-      console.log(`ℹ️ No name update needed. AI response userName: ${response.userName}, current: ${userName}`);
-    }
+    // Simple mock response for deployment
+    const response = {
+      message: `Hola! Recibí tu mensaje: "${prompt}". El sistema de IA estará disponible pronto.`,
+      action: null,
+      error: null
+    };
 
     return res.json(response);
   } catch (error) {
