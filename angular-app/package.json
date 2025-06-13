@@ -30,18 +30,18 @@
   "homepage": "https://github.com/camilocas88/angular-ai-ecommerce-chat#readme",
   "private": true,
   "dependencies": {
-    "@angular/animations": "^20.0.0-rc.3",
-    "@angular/common": "^20.0.0-rc.3",
-    "@angular/compiler": "^20.0.0-rc.3",
-    "@angular/core": "^20.0.0-rc.3",
-    "@angular/forms": "^20.0.0-rc.3",
-    "@angular/platform-browser": "^20.0.0-rc.3",
-    "@angular/platform-browser-dynamic": "^20.0.0-rc.3",
-    "@angular/platform-server": "^20.0.0-rc.3",
-    "@angular/router": "^20.0.0-rc.3",
+    "@angular/animations": "^20.0.0-rc.2",
+    "@angular/common": "^20.0.0-rc.2",
+    "@angular/compiler": "^20.0.0-rc.2",
+    "@angular/core": "^20.0.0-rc.2",
+    "@angular/forms": "^20.0.0-rc.2",
+    "@angular/platform-browser": "^20.0.0-rc.2",
+    "@angular/platform-browser-dynamic": "^20.0.0-rc.2",
+    "@angular/platform-server": "^20.0.0-rc.2",
+    "@angular/router": "^20.0.0-rc.2",
     "@angular/ssr": "^20.0.0-rc.3",
     "@google/generative-ai": "^0.21.0",
-    "@ngx-templates/shared": "^3.1.9",
+    "@ngx-templates/shared": "^1.0.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "genkit": "^0.9.0",
@@ -52,7 +52,7 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "^20.0.0-rc.3",
     "@angular/cli": "^20.0.0-rc.3",
-    "@angular/compiler-cli": "^20.0.0-rc.3",
+    "@angular/compiler-cli": "^20.0.0-rc.2",
     "@types/express": "^4.17.17",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^18.7.10",
@@ -66,6 +66,6 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "nodemon": "^3.1.7",
     "sass": "^1.77.6",
-    "typescript": "~5.6.0"
+    "typescript": "~5.8.3"
   }
 }
