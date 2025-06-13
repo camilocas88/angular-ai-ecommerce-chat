@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "declaration": false,
+    "removeComments": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "sourceMap": false,
+    "outDir": "./dist",
+    "typeRoots": ["node_modules/@types"],
+    "resolveJsonModule": true
+  },
+  "include": [
+    "src/server-dev.ts",
+    "src/ai/**/*",
+    "src/api.ts",
+    "src/data.ts"
+  ],
+  "exclude": [
+    "src/app/**/*",
+    "**/*.spec.ts"
+  ],
+  "ts-node": {
+    "esm": false,
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  }
+}

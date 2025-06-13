@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chat Resizable</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+            height: 100vh;
+        }
+
+        .demo-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Chat resizable container */
+        .chat-container {
+            position: fixed;
+            bottom: 0;
+            right: 2rem;
+            width: 350px;
+            height: 52px;
+            min-width: 300px;
+            max-width: 90vw;
+            min-height: 52px;
+            max-height: 90vh;
+            z-index: 1000;
+            background: #2d2d2d;
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .chat-container:hover {
+            transform: translateY(-2px);
+        }
+
+        .chat-container.chat-open {
+            height: 500px;
+            transform: translateY(0);
+        }
+
+        /* Chat header */
+        .chat-header {
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(135deg, #000000 0%, #13181d 100%);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 12px 12px 0 0;
+            transition: all 0.3s ease;
+            user-select: none;
+            letter-spacing: 0.3px;
+            height: 52px;
+            box-sizing: border-box;
+        }
+
+        .chat-header:hover {
+            background: linear-gradient(135deg, #000000 0%, #181f25 100%);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .chat-header:active {
+            transform: translateY(1px);
+        }
+
+        /* Chat controls */
+        .chat-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .chat-controls button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            opacity: 0.8;
+        }
+
+        .chat-controls button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .chat-controls button:active {
+            transform: scale(0.95);
+        }
+
+        /* Chat content */
+        .chat-content {
+            background: #1a1a1a;
+            height: calc(100% - 52px);
+            overflow: hidden;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideDown 0.3s ease-out;
+            padding: 1rem;
+            color: white;
+        }
+
+        /* Resize handles */
+        .resize-handle {
+            position: absolute;
+            background: transparent;
+            z-index: 10;
+        }
+
+        .resize-handle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .resize-n {
+            top: 0;
+            left: 10px;
+            right: 10px;
+            height: 4px;
+            cursor: n-resize;
+        }
+
+        .resize-ne {
+            top: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            cursor: ne-resize;
+        }
+
+        .resize-e {
+            top: 10px;
+            right: 0;
+            bottom: 10px;
+            width: 4px;
+            cursor: e-resize;
+        }
+
+        .resize-se {
+            bottom: 0;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            cursor: se-resize;
+        }
+
+        .resize-se::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
+            background: linear-gradient(-45deg, transparent 0%, transparent 40%, #888 40%, #888 50%, transparent 50%, transparent 90%, #888 90%);
+            opacity: 0.6;
+        }
+
+        .resize-se:hover::after {
+            opacity: 1;
+        }
+
+        .resize-s {
+            bottom: 0;
+            left: 10px;
+            right: 10px;
+            height: 4px;
+            cursor: s-resize;
+        }
+
+        .resize-sw {
+            bottom: 0;
+            left: 0;
+            width: 10px;
+            height: 10px;
+            cursor: sw-resize;
+        }
+
+        .resize-w {
+            top: 10px;
+            left: 0;
+            bottom: 10px;
+            width: 4px;
+            cursor: w-resize;
+        }
+
+        .resize-nw {
+            top: 0;
+            left: 0;
+            width: 10px;
+            height: 10px;
+            cursor: nw-resize;
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .chat-container {
+                right: 1rem;
+                left: 1rem;
+                width: auto;
+                max-width: none;
+            }
+
+            .chat-container.chat-open {
+                height: 70vh;
+            }
+        }
+
+        .test-instructions {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-content">
+        <h1>🎨 Test Chat Resizable</h1>
+
+        <div class="test-instructions">
+            <h3>🧪 Instrucciones para probar:</h3>
+            <ul>
+                <li><strong>Abrir/Cerrar:</strong> Click en el header del chat</li>
+                <li><strong>Maximizar:</strong> Doble click en el header O botón 🗖</li>
+                <li><strong>Redimensionar:</strong> Arrastra desde cualquier borde o esquina</li>
+                <li><strong>Esquina inferior derecha:</strong> Tiene indicador visual para resize</li>
+                <li><strong>Persistencia:</strong> El estado se guarda en localStorage</li>
+            </ul>
+        </div>
+
+        <p>Esta es una página de prueba para el chat resizable. El chat aparece en la esquina inferior derecha.</p>
+
+        <h2>Funcionalidades implementadas:</h2>
+        <ul>
+            <li>✅ Resize desde 8 puntos (esquinas y bordes)</li>
+            <li>✅ Límites inteligentes (300px-800px ancho, 300px-90vh alto)</li>
+            <li>✅ Botón maximizar/restaurar</li>
+            <li>✅ Indicadores visuales</li>
+            <li>✅ Persistencia en localStorage</li>
+            <li>✅ Responsive para móviles</li>
+        </ul>
+
+        <p>Cuando actualices a Node.js v20+, podrás integrar esto en la aplicación Angular completa.</p>
+    </div>
+
+    <!-- Chat resizable -->
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header" onclick="toggleChat()" ondblclick="toggleMaximize()">
+            <span>💬 Chat</span>
+            <div class="chat-controls">
+                <button class="minimize-btn" onclick="toggleMaximize(); event.stopPropagation()"
+                        id="maximizeBtn" title="Maximizar">
+                    🗖
+                </button>
+                <button class="expand-btn" id="expandBtn" title="Abrir">
+                    ▲
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-content" id="chatContent" style="display: none;">
+            <h3>🤖 Chat de prueba</h3>
+            <p>Este es el contenido del chat. Aquí iría el componente ChatWrapper de Angular.</p>
+            <p>Para probarlo con la IA real, necesitas:</p>
+            <ol>
+                <li>Actualizar Node.js a v20+</li>
+                <li>Ejecutar <code>npm run dev</code></li>
+                <li>El chat se conectará automáticamente a la API</li>
+            </ol>
+
+            <div style="background: #333; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+                <p><strong>🎯 Prueba arrastrando desde:</strong></p>
+                <ul>
+                    <li>Bordes: arriba, abajo, izquierda, derecha</li>
+                    <li>Esquinas: todas las 4 esquinas</li>
+                    <li>Esquina inferior derecha tiene indicador visual</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Resize handles -->
+        <div class="resize-handle resize-n" onmousedown="startResize('n', event)"></div>
+        <div class="resize-handle resize-ne" onmousedown="startResize('ne', event)"></div>
+        <div class="resize-handle resize-e" onmousedown="startResize('e', event)"></div>
+        <div class="resize-handle resize-se" onmousedown="startResize('se', event)"></div>
+        <div class="resize-handle resize-s" onmousedown="startResize('s', event)"></div>
+        <div class="resize-handle resize-sw" onmousedown="startResize('sw', event)"></div>
+        <div class="resize-handle resize-w" onmousedown="startResize('w', event)"></div>
+        <div class="resize-handle resize-nw" onmousedown="startResize('nw', event)"></div>
+    </div>
+
+    <script>
+        // Chat functionality
+        let chatOpen = false;
+        let chatMaximized = false;
+        let isResizing = false;
+        let resizeDirection = '';
+        let startX = 0;
+        let startY = 0;
+        let startWidth = 0;
+        let startHeight = 0;
+        let startLeft = 0;
+        let startTop = 0;
+
+        const chatContainer = document.getElementById('chatContainer');
+        const chatContent = document.getElementById('chatContent');
+        const maximizeBtn = document.getElementById('maximizeBtn');
+        const expandBtn = document.getElementById('expandBtn');
+
+        function toggleChat() {
+            chatOpen = !chatOpen;
+            updateChatUI();
+            saveChatSettings();
+        }
+
+        function toggleMaximize() {
+            chatMaximized = !chatMaximized;
+            applyChatSize();
+            updateChatUI();
+            saveChatSettings();
+        }
+
+        function updateChatUI() {
+            if (chatOpen) {
+                chatContainer.classList.add('chat-open');
+                chatContent.style.display = 'block';
+                expandBtn.textContent = '▼';
+                expandBtn.title = 'Cerrar';
+            } else {
+                chatContainer.classList.remove('chat-open');
+                chatContent.style.display = 'none';
+                expandBtn.textContent = '▲';
+                expandBtn.title = 'Abrir';
+            }
+
+            if (chatMaximized) {
+                maximizeBtn.textContent = '🗗';
+                maximizeBtn.title = 'Restaurar';
+            } else {
+                maximizeBtn.textContent = '🗖';
+                maximizeBtn.title = 'Maximizar';
+            }
+        }
+
+        function startResize(direction, event) {
+            event.preventDefault();
+            isResizing = true;
+            resizeDirection = direction;
+
+            const rect = chatContainer.getBoundingClientRect();
+            startX = event.clientX;
+            startY = event.clientY;
+            startWidth = rect.width;
+            startHeight = rect.height;
+            startLeft = rect.left;
+            startTop = rect.top;
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+            document.body.style.cursor = getCursor(direction);
+            document.body.style.userSelect = 'none';
+        }
+
+        function onMouseMove(event) {
+            if (!isResizing) return;
+
+            const deltaX = event.clientX - startX;
+            const deltaY = event.clientY - startY;
+
+            let newWidth = startWidth;
+            let newHeight = startHeight;
+            let newLeft = startLeft;
+            let newTop = startTop;
+
+            // Aplicar cambios según la dirección
+            if (resizeDirection.includes('e')) {
+                newWidth = Math.max(300, Math.min(800, startWidth + deltaX));
+            }
+            if (resizeDirection.includes('w')) {
+                newWidth = Math.max(300, Math.min(800, startWidth - deltaX));
+                newLeft = startLeft + deltaX;
+            }
+            if (resizeDirection.includes('s')) {
+                newHeight = Math.max(300, Math.min(window.innerHeight * 0.9, startHeight + deltaY));
+            }
+            if (resizeDirection.includes('n')) {
+                newHeight = Math.max(300, Math.min(window.innerHeight * 0.9, startHeight - deltaY));
+                newTop = startTop + deltaY;
+            }
+
+            chatContainer.style.width = newWidth + 'px';
+            chatContainer.style.height = newHeight + 'px';
+            chatContainer.style.left = newLeft + 'px';
+            chatContainer.style.top = newTop + 'px';
+        }
+
+        function onMouseUp() {
+            if (!isResizing) return;
+
+            isResizing = false;
+            resizeDirection = '';
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+
+            saveChatSettings();
+        }
+
+        function getCursor(direction) {
+            const cursors = {
+                'n': 'n-resize',
+                'ne': 'ne-resize',
+                'e': 'e-resize',
+                'se': 'se-resize',
+                's': 's-resize',
+                'sw': 'sw-resize',
+                'w': 'w-resize',
+                'nw': 'nw-resize'
+            };
+            return cursors[direction] || 'default';
+        }
+
+        function applyChatSize() {
+            if (chatMaximized) {
+                chatContainer.style.width = '80vw';
+                chatContainer.style.height = '80vh';
+                chatContainer.style.left = '10vw';
+                chatContainer.style.top = '10vh';
+            } else {
+                chatContainer.style.width = '350px';
+                chatContainer.style.height = chatOpen ? '500px' : '52px';
+                chatContainer.style.left = '';
+                chatContainer.style.top = '';
+            }
+        }
+
+        function saveChatSettings() {
+            const settings = {
+                open: chatOpen,
+                maximized: chatMaximized,
+            };
+            localStorage.setItem('chatSettings', JSON.stringify(settings));
+        }
+
+        function loadChatSettings() {
+            const saved = localStorage.getItem('chatSettings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                chatOpen = settings.open || false;
+                chatMaximized = settings.maximized || false;
+                updateChatUI();
+                applyChatSize();
+            }
+        }
+
+        // Initialize
+        loadChatSettings();
+    </script>
+</body>
+</html>

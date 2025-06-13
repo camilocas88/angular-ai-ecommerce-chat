@@ -1,0 +1,52 @@
+<ec-header />
+<div class="main-wrapper">
+  <main>
+    <router-outlet />
+  </main>
+</div>
+<ec-footer />
+<ngx-toast-outlet />
+@if (loader.loader()) {
+  <ec-loader />
+}
+
+<!-- Botón de emergencia para resetear chat si está perdido -->
+<button class="reset-chat-btn" (click)="resetChatPosition()" title="Resetear posición del chat">
+  💬🔄
+</button>
+
+<!-- Chat con resize avanzado -->
+<div class="chat-container" [class.chat-open]="chatOpen()" #chatContainer>
+  <div class="chat-header" (click)="toggleChat()" (dblclick)="toggleMaximize()">
+    <span>💬 Chat</span>
+    <div class="chat-controls">
+      <button class="minimize-btn" (click)="toggleMaximize(); $event.stopPropagation()"
+              [title]="chatMaximized() ? 'Restaurar' : 'Maximizar'">
+        {{ chatMaximized() ? '🗗' : '🗖' }}
+      </button>
+      <button class="expand-btn" [title]="chatOpen() ? 'Cerrar' : 'Abrir'">
+        {{ chatOpen() ? '▼' : '▲' }}
+      </button>
+    </div>
+  </div>
+
+  @if (chatOpen()) {
+    <div class="chat-content">
+      @defer (on viewport) {
+        <ec-chat-wrapper />
+      } @placeholder {
+        <ec-loading message="Loading the chat..." />
+      }
+    </div>
+
+    <!-- Resize handles -->
+    <div class="resize-handle resize-n" (mousedown)="startResize('n', $event)"></div>
+    <div class="resize-handle resize-ne" (mousedown)="startResize('ne', $event)"></div>
+    <div class="resize-handle resize-e" (mousedown)="startResize('e', $event)"></div>
+    <div class="resize-handle resize-se" (mousedown)="startResize('se', $event)"></div>
+    <div class="resize-handle resize-s" (mousedown)="startResize('s', $event)"></div>
+    <div class="resize-handle resize-sw" (mousedown)="startResize('sw', $event)"></div>
+    <div class="resize-handle resize-w" (mousedown)="startResize('w', $event)"></div>
+    <div class="resize-handle resize-nw" (mousedown)="startResize('nw', $event)"></div>
+  }
+</div>
