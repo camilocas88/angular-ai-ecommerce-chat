@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "buildCommand": "cd angular-app && npm install && npm run build",
+  "outputDirectory": "angular-app/dist/angular-app/browser",
+  "installCommand": "npm install",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
