@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "🛒 Angular AI Ecommerce Chat with bilingual AI assistant powered by Google Gemini",
   "scripts": {
-    "build": "cd angular-app && npm install && npm run build",
-    "dev": "cd angular-app && npm run dev",
-    "start": "cd angular-app && npm start",
-    "install": "cd angular-app && npm install",
-    "vercel": "vercel",
-    "vercel:dev": "vercel dev"
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "serve:ssr": "ng serve",
+    "build:ssr": "ng build",
+    "prerender": "ng run ecommerce:prerender"
   },
   "keywords": [
     "angular",
@@ -26,8 +28,44 @@
     "url": "https://github.com/camilocas88/angular-ai-ecommerce-chat.git"
   },
   "homepage": "https://github.com/camilocas88/angular-ai-ecommerce-chat#readme",
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^20.0.0-rc.3",
+    "@angular/common": "^20.0.0-rc.3",
+    "@angular/compiler": "^20.0.0-rc.3",
+    "@angular/core": "^20.0.0-rc.3",
+    "@angular/forms": "^20.0.0-rc.3",
+    "@angular/platform-browser": "^20.0.0-rc.3",
+    "@angular/platform-browser-dynamic": "^20.0.0-rc.3",
+    "@angular/platform-server": "^20.0.0-rc.3",
+    "@angular/router": "^20.0.0-rc.3",
+    "@angular/ssr": "^20.0.0-rc.3",
+    "@google/generative-ai": "^0.21.0",
+    "@ngx-templates/shared": "^3.1.9",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "genkit": "^0.9.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.15.0"
+  },
   "devDependencies": {
-    "@vercel/node": "^3.0.0",
-    "vercel": "^34.0.0"
+    "@angular-devkit/build-angular": "^20.0.0-rc.3",
+    "@angular/cli": "^20.0.0-rc.3",
+    "@angular/compiler-cli": "^20.0.0-rc.3",
+    "@types/express": "^4.17.17",
+    "@types/jasmine": "~5.1.0",
+    "@types/node": "^18.7.10",
+    "angular-eslint": "18.4.1",
+    "eslint": "^9.16.0",
+    "jasmine-core": "~5.4.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "nodemon": "^3.1.7",
+    "sass": "^1.77.6",
+    "typescript": "~5.6.0"
   }
 }

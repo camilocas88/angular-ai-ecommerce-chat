@@ -1,10 +1,8 @@
 {
   "version": 2,
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "dist/ecommerce/browser",
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
     {
       "handle": "filesystem"
     },
