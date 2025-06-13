@@ -78,7 +78,7 @@ export class ChatComponent {
 
   protected nextBotMessage = httpResource<Response>(() =>
     this.lastMessage()
-      ? `http://localhost:4000/api/prompt?prompt=${this.lastMessage()}&tech=angular`
+      ? `/api/prompt?prompt=${this.lastMessage()}&tech=angular`
       : undefined
   );
 

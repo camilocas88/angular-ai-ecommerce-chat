@@ -47,7 +47,7 @@ interface UserInfo {
   `
 })
 export class ChatWrapperComponent {
-  userResource = httpResource<UserInfo>(() => 'http://localhost:4000/api/user');
+  userResource = httpResource<UserInfo>(() => '/api/user');
 
   // Signal local para el estado del usuario que se actualiza inmediatamente
   private localUserOverride = signal<UserInfo | null>(null);
@@ -99,7 +99,7 @@ export class ChatWrapperComponent {
     try {
       console.log('📝 [Wrapper] Updating user name on server:', name);
 
-      const response = await fetch('http://localhost:4000/api/user/name', {
+      const response = await fetch('/api/user/name', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
