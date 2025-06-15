@@ -1,0 +1,41 @@
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# <footer>
+
+# Type debe ser uno de los siguientes:
+# feat:     Nueva funcionalidad
+# fix:      Corrección de bugs
+# docs:     Cambios en documentación
+# style:    Cambios de formato (espacios, comas, etc.)
+# refactor: Refactoring de código (sin cambios funcionales)
+# test:     Agregar o modificar tests
+# chore:    Cambios en build, dependencias, etc.
+# perf:     Mejoras de performance
+# ci:       Cambios en CI/CD
+# revert:   Revertir commits anteriores
+
+# Scope (opcional): área del proyecto afectada
+# - api, ui, chat, products, etc.
+
+# Subject: descripción corta (máx 50 chars)
+# - Usar imperativo: "add" no "added" ni "adds"
+# - No capitalizar primera letra
+# - No punto al final
+
+# Body (opcional): explicación detallada
+# - Usar imperativo
+# - Incluir motivación y contexto
+
+# Footer (opcional):
+# - BREAKING CHANGE: descripción
+# - Closes #123
+# - Refs #123
+
+# Ejemplos:
+# feat(chat): add bilingual AI assistant
+# fix(api): resolve 404 errors in products endpoint
+# docs: update README with deployment instructions
+# feat!: change API response format (BREAKING CHANGE)
+# chore: bump Angular to v20.0.3

@@ -1,0 +1,89 @@
+name: 🚀 Deploy to Vercel
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  version-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 📋 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: angular-app/package-lock.json
+
+    - name: 📦 Install dependencies
+      run: |
+        cd angular-app
+        npm ci --legacy-peer-deps
+
+    - name: 🧪 Run tests (if any)
+      run: |
+        cd angular-app
+        # npm run test:ci
+
+    - name: 🏗️ Build application
+      run: |
+        cd angular-app
+        npm run build
+
+    - name: 🔖 Auto version bump
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        cd angular-app
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+        # Detectar tipo de cambio basado en commit message
+        COMMIT_MSG=$(git log -1 --pretty=%B)
+        echo "Commit message: $COMMIT_MSG"
+
+        if [[ $COMMIT_MSG == *"BREAKING CHANGE"* ]] || [[ $COMMIT_MSG == *"!:"* ]]; then
+          echo "🔥 Major version bump (breaking change)"
+          npm version major --no-git-tag-version
+        elif [[ $COMMIT_MSG == *"feat"* ]] || [[ $COMMIT_MSG == *"Add"* ]]; then
+          echo "✨ Minor version bump (new feature)"
+          npm version minor --no-git-tag-version
+        else
+          echo "🐛 Patch version bump (bug fix/improvement)"
+          npm version patch --no-git-tag-version
+        fi
+
+        # Obtener nueva versión
+        NEW_VERSION=$(node -p "require('./package.json').version")
+        echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+        # Commit y tag
+        git add package.json
+        git commit -m "🔖 Bump version to v$NEW_VERSION [skip ci]"
+        git tag -a "v$NEW_VERSION" -m "Version $NEW_VERSION"
+        git push origin main
+        git push origin "v$NEW_VERSION"
+
+    - name: 🚀 Deploy to Vercel
+      if: github.ref == 'refs/heads/main'
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: ./angular-app
+        vercel-args: '--prod'
+
+    - name: 📱 Notify deployment
+      if: github.ref == 'refs/heads/main' && env.NEW_VERSION
+      run: |
+        echo "🎉 Successfully deployed version $NEW_VERSION to production!"
+        echo "🔗 Check your application at: https://your-app.vercel.app"

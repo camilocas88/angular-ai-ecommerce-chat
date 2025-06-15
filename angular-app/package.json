@@ -10,7 +10,15 @@
     "test": "ng test",
     "serve:ssr": "ng serve",
     "build:ssr": "ng build",
-    "prerender": "ng run ecommerce:prerender"
+    "prerender": "ng run ecommerce:prerender",
+    "version:patch": "npm version patch && git push origin main --follow-tags",
+    "version:minor": "npm version minor && git push origin main --follow-tags",
+    "version:major": "npm version major && git push origin main --follow-tags",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel",
+    "setup-ci": "chmod +x ../setup-ci-cd.sh && ../setup-ci-cd.sh",
+    "commit": "git add . && git commit",
+    "release": "git add . && git commit && git push origin main"
   },
   "keywords": [
     "angular",
