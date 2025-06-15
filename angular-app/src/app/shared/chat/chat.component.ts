@@ -74,7 +74,10 @@ export class ChatComponent {
   protected userMessage = '';
   protected lastMessage = signal('');
   protected isLoading = signal(false).asReadonly();
-  private hasGreeted = signal(false);
+
+  // Flag global para evitar múltiples auto-greetings
+  private static hasGlobalGreeting = false;
+  private hasComponentGreeted = signal(false);
 
   protected nextBotMessage = httpResource<Response>(() =>
     this.lastMessage()
@@ -88,14 +91,24 @@ export class ChatComponent {
   ) {
     afterNextRender(() => {
       this.scrollToBottom();
-      // Si es usuario nuevo y no hemos saludado, enviar saludo automático
-      if (this.isNewUser() && !this.hasGreeted() && this.messages().length === 0) {
+
+      // CRITICAL: Solo enviar saludo si es usuario nuevo, no hemos saludado Y no hay mensajes
+      // Y no se ha enviado un saludo global previamente
+      const shouldGreet = this.isNewUser() &&
+                         !this.hasComponentGreeted() &&
+                         !ChatComponent.hasGlobalGreeting &&
+                         this.messages().length === 0;
+
+      if (shouldGreet) {
         console.log('🎯 [Chat] Sending auto greeting for new user');
+        ChatComponent.hasGlobalGreeting = true; // Marcar globalmente
+        this.hasComponentGreeted.set(true); // Marcar para este componente
         this.sendAutoGreeting();
       } else {
         console.log('🎯 [Chat] Skipping auto greeting:', {
           isNewUser: this.isNewUser(),
-          hasGreeted: this.hasGreeted(),
+          hasComponentGreeted: this.hasComponentGreeted(),
+          hasGlobalGreeting: ChatComponent.hasGlobalGreeting,
           messagesLength: this.messages().length
         });
       }
@@ -108,12 +121,15 @@ export class ChatComponent {
       console.log('🤖 [Chat] Received AI response:', response);
       this.addMessage(response.message, 'bot');
 
-      // Detectar si hay un nombre en la respuesta
-      if (response.userName) {
-        console.log('👤 [Chat] Name detected in AI response:', response.userName);
+      // MEJORADO: Solo detectar nombres si realmente hay un userName Y es diferente al actual
+      if (response.userName && response.userName !== this.name() && response.userName !== 'Usuario') {
+        console.log('👤 [Chat] Valid name detected in AI response:', response.userName);
         this.nameDetected.emit(response.userName);
       } else {
-        console.log('ℹ️ [Chat] No userName in AI response');
+        console.log('ℹ️ [Chat] No valid userName in AI response or same as current:', {
+          responseUserName: response.userName,
+          currentName: this.name()
+        });
       }
 
       if (response.action) {
@@ -124,7 +140,6 @@ export class ChatComponent {
 
   private sendAutoGreeting() {
     console.log('👋 [Chat] Sending auto greeting...');
-    this.hasGreeted.set(true);
     // Enviar un mensaje automático de saludo
     this.lastMessage.set('hola');
   }
@@ -136,9 +151,9 @@ export class ChatComponent {
 
   getPlaceholder(): string {
     if (this.isNewUser()) {
-      return 'Escribe tu nombre...';
+      return 'Escribe tu nombre o di hola...';
     }
-    return 'Type a message...';
+    return `Hola ${this.name()}, ¿en qué puedo ayudarte?`;
   }
 
   sendMessage() {
@@ -155,31 +170,29 @@ export class ChatComponent {
     this.addMessage(message, 'user');
     this.userMessage = '';
 
-    // CRITICAL: Si es usuario nuevo, verificar si el mensaje contiene un nombre
-    if (this.isNewUser()) {
+    // MEJORADO: Solo detectar nombres en mensajes de usuarios nuevos Y que no sean saludos simples
+    if (this.isNewUser() && !this.isSimpleGreeting(message)) {
       const detectedName = this.detectNameInUserMessage(message);
-      if (detectedName) {
-        console.log('👤 [Chat] Name detected in user message, emitting IMMEDIATELY:', detectedName);
-
-        // Emitir inmediatamente al wrapper para actualizar el estado
+      if (detectedName && detectedName !== 'Usuario') {
+        console.log('👤 [Chat] Name detected in user message, emitting:', detectedName);
         this.nameDetected.emit(detectedName);
-
-        // FORCE: También actualizar el placeholder inmediatamente
-        setTimeout(() => {
-          console.log('🔄 [Chat] Force updating placeholder after name detection');
-        }, 50);
       }
     }
+  }
+
+  private isSimpleGreeting(message: string): boolean {
+    const greetings = ['hola', 'hello', 'hi', 'hey', 'buenos días', 'buenas tardes', 'buenas noches'];
+    const lowerMessage = message.toLowerCase().trim();
+    return greetings.includes(lowerMessage);
   }
 
   private detectNameInUserMessage(message: string): string | null {
     console.log('🔍 [Client] Detecting name in user message:', message);
 
-    // Patrones para detectar nombres en mensajes del usuario
+    // Patrones mejorados para detectar nombres
     const namePatterns = [
       /(?:mi nombre es|me llamo|soy|i am|my name is|i'm)\s+([a-záéíóúñA-ZÁÉÍÓÚÑ][a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,20})/i,
       /^([a-záéíóúñA-ZÁÉÍÓÚÑ][a-záéíóúñA-ZÁÉÍÓÚÑ]{2,15})$/i, // Nombre simple como respuesta
-      /^([a-z][a-z]{2,15})$/i, // Patrón adicional para nombres sin acentos
     ];
 
     for (const pattern of namePatterns) {
@@ -188,8 +201,13 @@ export class ChatComponent {
         const detectedName = match[1].trim();
         console.log('✅ [Client] Name pattern matched:', detectedName);
 
-        // Validar que no sea una palabra común
-        const commonWords = ['hola', 'hello', 'gracias', 'thanks', 'bien', 'good', 'mal', 'bad', 'si', 'no', 'yes', 'usuario'];
+        // Lista expandida de palabras a evitar
+        const commonWords = [
+          'hola', 'hello', 'gracias', 'thanks', 'bien', 'good', 'mal', 'bad',
+          'si', 'no', 'yes', 'usuario', 'ayuda', 'help', 'producto', 'productos',
+          'comprar', 'precio', 'caro', 'barato', 'angular', 'react'
+        ];
+
         if (!commonWords.includes(detectedName.toLowerCase()) && detectedName.length >= 2) {
           console.log('📝 [Client] Valid name detected:', detectedName);
           return detectedName;

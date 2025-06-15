@@ -52,6 +52,9 @@ export class ChatWrapperComponent {
   // Signal local para el estado del usuario que se actualiza inmediatamente
   private localUserOverride = signal<UserInfo | null>(null);
 
+  // Flag para evitar múltiples actualizaciones del mismo nombre
+  private isUpdatingName = signal(false);
+
   // Computed que devuelve el usuario local si existe, sino el del resource
   currentUser = computed(() => {
     const override = this.localUserOverride();
@@ -76,7 +79,14 @@ export class ChatWrapperComponent {
   });
 
   onNameDetected(name: string) {
+    // Evitar actualizaciones duplicadas o si ya estamos actualizando
+    if (this.isUpdatingName() || this.currentUser().name === name) {
+      console.log('🚫 [Wrapper] Skipping name update - already updating or same name:', name);
+      return;
+    }
+
     console.log('👤 [Wrapper] Name detected event received:', name);
+    this.isUpdatingName.set(true);
 
     // Actualizar inmediatamente el estado local
     const currentUser = this.userResource.value();
@@ -84,14 +94,14 @@ export class ChatWrapperComponent {
       const updatedUser: UserInfo = {
         ...currentUser,
         name: name,
-        isNewUser: false
+        isNewUser: false // CRITICAL: Marcar como no nuevo para evitar auto-greetings
       };
 
       this.localUserOverride.set(updatedUser);
       console.log('🔄 [Wrapper] Updated local user state immediately:', updatedUser);
     }
 
-    // Llamar al servidor para persistir el cambio
+    // Llamar al servidor para persistir el cambio (sin reload)
     this.updateUserName(name);
   }
 
@@ -111,26 +121,30 @@ export class ChatWrapperComponent {
         const result = await response.json();
         console.log('✅ [Wrapper] Name update response from server:', result);
 
-        // Recargar el resource para sincronizar con el servidor
-        this.userResource.reload();
+        // NO HACER RELOAD del resource para evitar bucles
+        // this.userResource.reload(); // ← ELIMINADO para evitar bucles
 
-        // Limpiar el override local después de un momento para usar el resource actualizado
-        setTimeout(() => {
-          console.log('🔄 [Wrapper] Clearing local override, using server state');
-          this.localUserOverride.set(null);
-        }, 100);
+        // Mantener el estado local actualizado permanentemente
+        // NO limpiar el override para evitar bucles
+        console.log('🔒 [Wrapper] Keeping local state, NOT reloading resource');
       } else {
         console.error('❌ [Wrapper] Failed to update name on server, status:', response.status);
         const errorText = await response.text();
         console.error('❌ [Wrapper] Error response:', errorText);
 
-        // En caso de error, limpiar el override local
-        this.localUserOverride.set(null);
+        // En caso de error, mantener el estado local (la UI ya se actualizó)
+        console.log('⚠️ [Wrapper] Keeping local state despite server error');
       }
     } catch (error) {
       console.error('❌ [Wrapper] Error updating name:', error);
-      // En caso de error, limpiar el override local
-      this.localUserOverride.set(null);
+      // En caso de error, mantener el estado local
+      console.log('⚠️ [Wrapper] Keeping local state despite network error');
+    } finally {
+      // Liberar el flag de actualización después de un momento
+      setTimeout(() => {
+        this.isUpdatingName.set(false);
+        console.log('🔓 [Wrapper] Released updating flag');
+      }, 1000);
     }
   }
 }
