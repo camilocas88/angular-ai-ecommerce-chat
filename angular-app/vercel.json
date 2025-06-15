@@ -4,7 +4,7 @@
   "outputDirectory": "dist/ecommerce/browser",
   "functions": {
     "api/*.ts": {
-      "runtime": "@vercel/node@3"
+      "runtime": "nodejs18.x"
     }
   },
   "routes": [
