@@ -105,3 +105,4 @@ Thumbs.db
 # Build and deployment
 *.tgz
 *.tar.gz
+.vercel

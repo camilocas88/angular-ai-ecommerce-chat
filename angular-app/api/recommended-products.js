@@ -103,7 +103,7 @@ const REACT_PRODUCTS = [
   }
 ];
 
-export default function handler(req: any, res: any) {
+export default function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -119,7 +119,7 @@ export default function handler(req: any, res: any) {
   }
 
   try {
-    const tech = req.query.tech as string;
+    const tech = req.query.tech;
 
     if (!tech || (tech !== 'angular' && tech !== 'react')) {
       return res.status(400).json({ error: 'Invalid or missing tech parameter' });
@@ -135,7 +135,7 @@ export default function handler(req: any, res: any) {
     console.error('API Error:', error);
     return res.status(500).json({
       error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: error.message || 'Unknown error'
     });
   }
 }
