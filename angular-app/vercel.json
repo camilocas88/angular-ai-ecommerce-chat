@@ -2,7 +2,16 @@
   "version": 2,
   "buildCommand": "npm install --legacy-peer-deps && npm run build",
   "outputDirectory": "dist/ecommerce/browser",
+  "functions": {
+    "api/*.ts": {
+      "runtime": "@vercel/node@3"
+    }
+  },
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
     {
       "handle": "filesystem"
     },
