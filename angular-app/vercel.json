@@ -8,7 +8,18 @@
       "dest": "/api/$1"
     },
     {
-      "src": "^/(?!api/).*",
+      "handle": "filesystem"
+    },
+    {
+      "src": "/products/.*",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/cart",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/(.*)",
       "dest": "/index.html"
     }
   ]
