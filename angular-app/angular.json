@@ -15,12 +15,12 @@
       "prefix": "ec",
       "architect": {
         "build": {
-          "builder": "@angular/build:application",
+          "builder": "@angular/build:browser",
           "options": {
             "outputPath": "dist/ecommerce",
             "baseHref": "/",
             "index": "src/index.html",
-            "browser": "src/main.ts",
+            "main": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
