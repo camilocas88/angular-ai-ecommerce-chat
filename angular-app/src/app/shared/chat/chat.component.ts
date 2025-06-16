@@ -81,7 +81,7 @@ export class ChatComponent {
 
   protected nextBotMessage = httpResource<Response>(() =>
     this.lastMessage()
-      ? `/api/prompt?prompt=${this.lastMessage()}&tech=angular`
+      ? `/api/prompt?prompt=${encodeURIComponent(this.lastMessage())}&tech=angular&name=${encodeURIComponent(this.name())}`
       : undefined
   );
 
