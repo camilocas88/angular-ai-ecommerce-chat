@@ -6,7 +6,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "build:spa": "ng build --configuration production --output-mode browser",
+    "build:spa": "ng build --configuration production --output-mode static",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr": "ng serve",
