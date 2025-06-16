@@ -4,9 +4,11 @@ import { ProductsApi } from "../../api/products-api.service";
 import { CartService } from "../../data-access/cart.service";
 
 export interface Action {
-  type: 'addToCart';
+  type: 'add_to_cart' | 'addToCart';
   params: {
-    id: string;
+    id?: string;
+    productId?: string;
+    productName?: string;
     quantity: number;
   }
 }
@@ -27,6 +29,7 @@ export class ActionExecutor {
     try {
       switch (action.type) {
         case 'addToCart':
+        case 'add_to_cart':
           await this.handleAddToCart(action.params);
           break;
         default:
@@ -38,17 +41,34 @@ export class ActionExecutor {
     }
   }
 
-  private async handleAddToCart(params: { id: string; quantity: number }) {
-    console.log(`🛒 Adding to cart: Product ID ${params.id}, Quantity: ${params.quantity}`);
+  private async handleAddToCart(params: {
+    id?: string;
+    productId?: string;
+    productName?: string;
+    quantity: number;
+  }) {
+    // Determinar el ID del producto (soportar ambos formatos)
+    const productId = params.productId || params.id;
+
+    if (!productId) {
+      console.error('❌ No product ID provided in params:', params);
+      this.toastsService.create('Error: ID de producto no especificado.');
+      return;
+    }
+
+    console.log(`🛒 Adding to cart: Product ID ${productId}, Quantity: ${params.quantity}`);
+    if (params.productName) {
+      console.log(`📦 Product name from AI: ${params.productName}`);
+    }
 
     try {
       // Obtener el producto
-      const product = await this.productsApi.getProduct(params.id);
+      const product = await this.productsApi.getProduct(productId);
       console.log('📦 Product found:', product?.name);
 
       if (!product) {
-        console.error('❌ Product not found for ID:', params.id);
-        this.toastsService.create(`Producto con ID ${params.id} no encontrado.`);
+        console.error('❌ Product not found for ID:', productId);
+        this.toastsService.create(`Producto con ID ${productId} no encontrado.`);
         return;
       }
 
