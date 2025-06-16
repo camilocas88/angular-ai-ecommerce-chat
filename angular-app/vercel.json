@@ -8,14 +8,25 @@
       "dest": "/api/$1"
     },
     {
-      "handle": "filesystem"
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf|eot))$",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
     },
     {
-      "src": "/products/.*",
+      "src": "/products/([^/]+)/([^/]+)",
       "dest": "/index.html"
     },
     {
-      "src": "/cart",
+      "src": "/products$",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/cart$",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/$",
       "dest": "/index.html"
     },
     {
