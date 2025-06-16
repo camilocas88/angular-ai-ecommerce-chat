@@ -47,6 +47,11 @@ export default async function handler(req, res) {
     // DETECTAR INTENCIÓN DEL USUARIO
     const userIntent = analyzeUserIntent(prompt, isNewUser);
 
+    // TERCERA PRIORIDAD: Detectar confirmaciones de compra con producto específico
+    const purchaseConfirmation = userIntent === 'purchase_confirmation'
+      ? detectPurchaseConfirmation(prompt, tech)
+      : null;
+
     // FLUJO PRINCIPAL DE RESPUESTAS
     if (hasNameInMessage && isNewUser) {
       // Usuario nuevo que acaba de decir su nombre
@@ -57,18 +62,18 @@ export default async function handler(req, res) {
         userName: detectedName
       };
     } else if (productRequest && !isNewUser) {
-      // Usuario conocido que solicita un producto específico
+      // Usuario conocido que solicita un producto específico - mostrar info y preguntar
       const enthusiasm = getEnthusiasticResponse();
+      const productUrl = getProductUrl(productRequest.productId, productRequest.productName);
       response = {
-        message: `${enthusiasm} ${userName}! Excelente elección con ${productRequest.productName}. ${productRequest.description} ¡Te lo agrego al carrito ahora mismo! 🛒`,
-        action: {
-          type: 'add_to_cart',
-          params: {
-            productId: productRequest.productId,
-            productName: productRequest.productName,
-            quantity: 1
-          }
-        },
+        message: `${enthusiasm} ${userName}! Tienes excelente gusto eligiendo **${productRequest.productName}** ✨
+
+🔗 **[Ver ${productRequest.productName}](${productUrl})**
+
+${productRequest.description} Es uno de nuestros productos más populares y tiene excelentes reseñas.
+
+**¿Te gustaría que lo agregue a tu carrito?** 🛒`,
+        action: null, // No agregar automáticamente
         error: null,
         userName: userName
       };
@@ -77,6 +82,24 @@ export default async function handler(req, res) {
       response = {
         message: `¡Wow! Tienes muy buen ojo para elegir - ${productRequest.productName} es uno de nuestros favoritos 😍 Antes de agregarlo a tu carrito, me gustaría conocerte mejor. **¿Cuál es tu nombre?** Así puedo hacer que tu experiencia sea perfecta.`,
         action: null,
+        error: null,
+        userName: userName
+      };
+    } else if (purchaseConfirmation && !isNewUser) {
+      // Usuario confirma compra de producto específico
+      const enthusiasm = getEnthusiasticResponse();
+      response = {
+        message: `${enthusiasm} ${userName}! ¡Perfecto! Te agrego **${purchaseConfirmation.productName}** a tu carrito ahora mismo 🛒✨
+
+¡Excelente elección! Este producto es uno de nuestros favoritos.`,
+        action: {
+          type: 'add_to_cart',
+          params: {
+            productId: purchaseConfirmation.productId,
+            productName: purchaseConfirmation.productName,
+            quantity: 1
+          }
+        },
         error: null,
         userName: userName
       };
@@ -130,8 +153,11 @@ function analyzeUserIntent(prompt, isNewUser) {
     return 'purchase';
   }
 
-  if (promptLower.includes('si') || promptLower.includes('ok') || promptLower.includes('bien')) {
-    return 'affirmation';
+  if (promptLower.includes('si') || promptLower.includes('sí') || promptLower.includes('ok') ||
+      promptLower.includes('bien') || promptLower.includes('dale') || promptLower.includes('perfecto') ||
+      promptLower.includes('agregar') || promptLower.includes('agregalo') || promptLower.includes('agréga') ||
+      promptLower.includes('add') || promptLower.includes('yes')) {
+    return 'purchase_confirmation';
   }
 
   if (promptLower.includes('no') || promptLower.includes('nada')) {
@@ -178,6 +204,12 @@ function handleKnownUserResponse(prompt, intent, userName, tech) {
       `¡De nada, ${userName}! 😊 Me encanta ayudarte. ¿Hay algo más en lo que pueda asistirte?`,
       `¡Un placer, ${userName}! 🌟 Siempre estoy aquí para ti. ¿Qué más podemos explorar juntos?`,
       `¡Para eso estoy aquí, ${userName}! 💪 ¿Te gustaría ver más productos o necesitas ayuda con algo específico?`
+    ],
+
+    purchase_confirmation: [
+      `¡Me encanta tu entusiasmo, ${userName}! 🎯 Estoy listo para ayudarte a agregar productos a tu carrito. **¿Qué producto específico te gustaría agregar?** Puedo ayudarte con camisetas, stickers, mugs o productos tech.`,
+      `¡Perfecto, ${userName}! 🚀 Veo que estás listo para comprar. **¿Cuál producto tienes en mente?** Dime qué te interesa y te muestro las opciones disponibles.`,
+      `¡Excelente, ${userName}! 🛒 Estoy aquí para ayudarte a encontrar el producto perfecto. **¿Qué tipo de producto ${tech} te gustaría agregar al carrito?**`
     ],
 
     affirmation: [
@@ -319,5 +351,57 @@ function extractName(message) {
     }
   }
 
+  return null;
+}
+
+// Función para generar URL del producto
+function getProductUrl(productId, productName) {
+  const baseUrl = 'https://angular-ai-ecommerce-chat.vercel.app';
+  const slug = productName
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+
+  return `${baseUrl}/products/${productId}/${slug}`;
+}
+
+// Función para detectar confirmaciones de compra con producto específico
+function detectPurchaseConfirmation(prompt, tech) {
+  const promptLower = prompt.toLowerCase().trim();
+
+  // Productos de Angular disponibles (misma lista que en detectProductRequest)
+  const angularProducts = [
+    { id: '6631', name: 'Angular T-shirt', keywords: ['camiseta', 'camisa', 'tshirt', 't-shirt', 'playera'] },
+    { id: '2372', name: 'Angular Sweatshirt', keywords: ['sudadera', 'sweatshirt', 'sueter'] },
+    { id: '3936', name: 'Angular Stickers', keywords: ['sticker', 'stickers', 'pegatina', 'pegatinas', 'calcomanias'] },
+    { id: '1002', name: 'Angular Mug', keywords: ['taza', 'mug', 'vaso'] },
+    { id: '5551', name: 'Pixel 8 Pro', keywords: ['pixel', 'telefono', 'celular', 'smartphone'] }
+  ];
+
+  const reactProducts = [
+    { id: 'react-001', name: 'React T-shirt', keywords: ['camiseta', 'camisa', 'tshirt', 't-shirt', 'playera'] },
+    { id: 'react-002', name: 'React Sweatshirt', keywords: ['sudadera', 'sweatshirt', 'sueter'] },
+    { id: 'react-003', name: 'React Stickers', keywords: ['sticker', 'stickers', 'pegatina', 'pegatinas'] },
+    { id: 'react-004', name: 'React Mug', keywords: ['taza', 'mug', 'vaso'] }
+  ];
+
+  const products = tech === 'react' ? reactProducts : angularProducts;
+
+  // Buscar coincidencias de productos en el mensaje de confirmación
+  for (const product of products) {
+    for (const keyword of product.keywords) {
+      if (promptLower.includes(keyword)) {
+        console.log(`🎯 [API] Purchase confirmation detected for: ${product.name}`);
+        return {
+          productId: product.id,
+          productName: product.name,
+          description: `Es un excelente producto ${tech} que te va a encantar.`
+        };
+      }
+    }
+  }
+
+  // Si no encuentra un producto específico, retornar null para seguir flujo normal
+  console.log('🤔 [API] Purchase confirmation without specific product');
   return null;
 }
