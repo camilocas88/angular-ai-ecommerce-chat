@@ -6,7 +6,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "build:spa": "ng build --configuration production --aot true --build-optimizer true --optimization true --vendor-chunk false",
+    "build:spa": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr": "ng serve",
