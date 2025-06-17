@@ -4,7 +4,7 @@
   "outputDirectory": "dist/ecommerce",
   "build": {
     "env": {
-      "NODE_VERSION": "18.x"
+      "NODE_VERSION": "20.x"
     }
   },
   "functions": {
