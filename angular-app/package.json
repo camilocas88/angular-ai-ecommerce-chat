@@ -12,6 +12,8 @@
     "serve:ssr": "ng serve",
     "build:ssr": "ng build",
     "prerender": "ng run ecommerce:prerender",
+    "update-version": "node update-version.js",
+    "postversion": "npm run update-version",
     "version:patch": "npm version patch && git push origin main --follow-tags",
     "version:minor": "npm version minor && git push origin main --follow-tags",
     "version:major": "npm version major && git push origin main --follow-tags",

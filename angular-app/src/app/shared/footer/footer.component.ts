@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '@ngx-templates/shared/icon';
 import { THEME_COMPONENTS, ThemeService } from '@ngx-templates/shared/theme';
-import { version } from '../../../../package.json';
+import { VERSION } from '../version';
 
 import { CategoriesService } from '../../data-access/categories.service';
 
@@ -17,5 +17,5 @@ import { CategoriesService } from '../../data-access/categories.service';
 export class FooterComponent {
   theme = inject(ThemeService);
   categories = inject(CategoriesService);
-  version = version;
+  version = VERSION;
 }
