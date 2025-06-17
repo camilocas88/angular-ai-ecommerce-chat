@@ -68,16 +68,30 @@
       margin-top: 2rem;
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
 
       ngx-icon {
         display: inline-block;
         vertical-align: bottom;
       }
 
+      .version {
+        color: var(--color-tertiary);
+        font-size: 0.9em;
+        opacity: 0.8;
+      }
+
       @include sb.bp-600w {
         flex-direction: column-reverse;
+        text-align: center;
 
         span {
+          margin-top: 1em;
+        }
+
+        .version {
           margin-top: 2em;
         }
       }
