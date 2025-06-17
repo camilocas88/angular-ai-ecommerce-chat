@@ -47,8 +47,13 @@ export default async function handler(req, res) {
     // DETECTAR INTENCIÓN DEL USUARIO
     const userIntent = analyzeUserIntent(prompt, isNewUser);
 
-    // TERCERA PRIORIDAD: Detectar confirmaciones de compra con producto específico
-    const purchaseConfirmation = userIntent === 'purchase_confirmation'
+    // TERCERA PRIORIDAD: Detectar confirmaciones de compra
+    const isSimpleConfirmation = userIntent === 'purchase_confirmation' &&
+      (promptLower === 'si' || promptLower === 'sí' || promptLower === 'yes' ||
+       promptLower === 'ok' || promptLower === 'dale' || promptLower === 'perfecto');
+
+    // CUARTA PRIORIDAD: Detectar confirmaciones con producto específico
+    const purchaseConfirmation = userIntent === 'purchase_confirmation' && !isSimpleConfirmation
       ? detectPurchaseConfirmation(prompt, tech)
       : null;
 
@@ -75,12 +80,21 @@ ${productRequest.description} Es uno de nuestros productos más populares y tien
 **¿Te gustaría que lo agregue a tu carrito?** 🛒`,
         action: null, // No agregar automáticamente
         error: null,
-        userName: userName
+        userName: userName,
+        pendingProduct: productRequest // Guardar el producto para confirmación posterior
       };
-    } else if (productRequest && isNewUser) {
-      // Usuario nuevo que solicita productos pero necesitamos su nombre primero
+    } else if (isSimpleConfirmation && !isNewUser) {
+      // Usuario confirma compra pero necesitamos saber qué producto
       response = {
-        message: `¡Wow! Tienes muy buen ojo para elegir - ${productRequest.productName} es uno de nuestros favoritos 😍 Antes de agregarlo a tu carrito, me gustaría conocerte mejor. **¿Cuál es tu nombre?** Así puedo hacer que tu experiencia sea perfecta.`,
+        message: `¡Perfecto, ${userName}! 🎯 Me encanta tu entusiasmo. **¿Qué producto te gustaría agregar al carrito?**
+
+Tengo estas opciones increíbles para ti:
+• **Camiseta ${tech}** - Súper cómoda y con estilo
+• **Sudadera ${tech}** - Perfecta para programar
+• **Stickers ${tech}** - Para personalizar tus dispositivos
+• **Taza ${tech}** - Para tu café mientras programas
+
+¿Cuál te llama más la atención? 😊`,
         action: null,
         error: null,
         userName: userName
@@ -100,6 +114,14 @@ ${productRequest.description} Es uno de nuestros productos más populares y tien
             quantity: 1
           }
         },
+        error: null,
+        userName: userName
+      };
+    } else if (productRequest && isNewUser) {
+      // Usuario nuevo que solicita productos pero necesitamos su nombre primero
+      response = {
+        message: `¡Wow! Tienes muy buen ojo para elegir - ${productRequest.productName} es uno de nuestros favoritos 😍 Antes de agregarlo a tu carrito, me gustaría conocerte mejor. **¿Cuál es tu nombre?** Así puedo hacer que tu experiencia sea perfecta.`,
+        action: null,
         error: null,
         userName: userName
       };
