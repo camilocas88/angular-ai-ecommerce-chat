@@ -2,11 +2,6 @@
   "version": 2,
   "buildCommand": "npm install --legacy-peer-deps && npm run build:spa",
   "outputDirectory": "dist/ecommerce",
-  "build": {
-    "env": {
-      "NODE_VERSION": "20.x"
-    }
-  },
   "functions": {
     "api/**/*.js": {
       "runtime": "@vercel/node@3.0.0"
