@@ -1,6 +1,6 @@
 {
   "name": "angular-ai-ecommerce-chat",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "🛒 Angular AI Ecommerce Chat with bilingual AI assistant powered by Google Gemini",
   "scripts": {
     "ng": "ng",
