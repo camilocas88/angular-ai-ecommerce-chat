@@ -45,3 +45,4 @@ Thumbs.db
 dist
 .env
 
+.vercel
