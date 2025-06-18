@@ -59,9 +59,9 @@ export default async function handler(req, res) {
        promptLower.includes('agregar') || promptLower.includes('quiero') ||
        promptLower.includes('comprar'));
 
-    // NUEVA LÓGICA: Si el usuario dice "sí" y no tenemos producto en este mensaje,
-    // asumir que quiere la camiseta Angular (producto más popular)
-    const isSimpleYesForAngularShirt = isSimpleConfirmation && !productRequest && !isNewUser;
+    // NUEVA LÓGICA: Solo agregar producto si el usuario dice "sí" Y previamente se le mostró un producto específico
+    // Para esto necesitamos context, por ahora solo agregar al carrito si menciona el producto + confirmación
+    const isSimpleYesForAngularShirt = false; // Desactivamos la lógica agresiva
 
     console.log('🔍 [API] Intent analysis:', {
       userIntent,
@@ -136,17 +136,23 @@ ${productRequest.description} Es uno de nuestros productos más populares y tien
         userName: userName
       };
     } else if (isSimpleConfirmation && !isNewUser) {
-      // Usuario confirma compra pero necesitamos saber qué producto
+      // Usuario dice "sí" - mostrar catálogo de productos con enlaces directos
       response = {
-        message: `¡Perfecto, ${userName}! 🎯 Me encanta tu entusiasmo. **¿Qué producto te gustaría agregar al carrito?**
+        message: `¡Genial, ${userName}! 🎉 Aquí tienes nuestros productos ${tech} más populares:
 
-Tengo estas opciones increíbles para ti:
-• **Camiseta ${tech}** - Súper cómoda y con estilo
-• **Sudadera ${tech}** - Perfecta para programar
-• **Stickers ${tech}** - Para personalizar tus dispositivos
-• **Taza ${tech}** - Para tu café mientras programas
+🔗 **[Angular T-shirt - $19.00](https://angular-ai-ecommerce-chat.vercel.app/products/6631/angular-t-shirt)**
+Una camiseta súper cómoda y con estilo para developers
 
-¿Cuál te llama más la atención? 😊`,
+🔗 **[Angular Sweatshirt - $35.00](https://angular-ai-ecommerce-chat.vercel.app/products/2372/angular-sweatshirt)**
+Perfecta para programar en días fríos
+
+🔗 **[Angular Stickers - $5.00](https://angular-ai-ecommerce-chat.vercel.app/products/3936/angular-stickers)**
+Para personalizar tu laptop y dispositivos
+
+🔗 **[Angular Mug - $15.00](https://angular-ai-ecommerce-chat.vercel.app/products/1002/angular-mug)**
+Para tu café mientras programas
+
+**¿Cuál te interesa más?** Solo dime el nombre del producto y te ayudo a agregarlo al carrito 🛒`,
         action: null,
         error: null,
         userName: userName
@@ -330,33 +336,66 @@ function detectProductRequest(prompt, tech) {
 
   // Productos de Angular disponibles
   const angularProducts = [
-    { id: '6631', name: 'Angular T-shirt', keywords: ['camiseta', 'camisa', 'tshirt', 't-shirt', 'playera'] },
-    { id: '2372', name: 'Angular Sweatshirt', keywords: ['sudadera', 'sweatshirt', 'sueter'] },
-    { id: '3936', name: 'Angular Stickers', keywords: ['sticker', 'stickers', 'pegatina', 'pegatinas', 'calcomanias'] },
-    { id: '1002', name: 'Angular Mug', keywords: ['taza', 'mug', 'vaso'] },
-    { id: '5551', name: 'Pixel 8 Pro', keywords: ['pixel', 'telefono', 'celular', 'smartphone'] }
+    {
+      id: '6631',
+      name: 'Angular T-shirt',
+      keywords: ['camiseta angular', 'camisa angular', 'tshirt angular', 't-shirt angular', 'playera angular', 'angular t-shirt', 'angular tshirt'],
+      exactMatches: ['camiseta', 'camisa', 'tshirt', 't-shirt', 'playera']
+    },
+    {
+      id: '2372',
+      name: 'Angular Sweatshirt',
+      keywords: ['sudadera angular', 'sweatshirt angular', 'sueter angular', 'angular sweatshirt', 'angular sudadera'],
+      exactMatches: ['sudadera', 'sweatshirt', 'sueter']
+    },
+    {
+      id: '3936',
+      name: 'Angular Stickers',
+      keywords: ['stickers angular', 'pegatinas angular', 'calcomanias angular', 'angular stickers'],
+      exactMatches: ['stickers', 'sticker', 'pegatinas', 'calcomanias']
+    },
+    {
+      id: '1002',
+      name: 'Angular Mug',
+      keywords: ['taza angular', 'mug angular', 'vaso angular', 'angular mug'],
+      exactMatches: ['taza', 'mug', 'vaso']
+    }
   ];
 
   // Productos de React disponibles
   const reactProducts = [
-    { id: 'react-001', name: 'React T-shirt', keywords: ['camiseta', 'camisa', 'tshirt', 't-shirt', 'playera'] },
-    { id: 'react-002', name: 'React Sweatshirt', keywords: ['sudadera', 'sweatshirt', 'sueter'] },
-    { id: 'react-003', name: 'React Stickers', keywords: ['sticker', 'stickers', 'pegatina', 'pegatinas'] },
-    { id: 'react-004', name: 'React Mug', keywords: ['taza', 'mug', 'vaso'] }
+    { id: 'react-001', name: 'React T-shirt', keywords: ['camiseta react', 'react t-shirt'], exactMatches: ['camiseta', 'camisa'] },
+    { id: 'react-002', name: 'React Sweatshirt', keywords: ['sudadera react', 'react sweatshirt'], exactMatches: ['sudadera'] },
+    { id: 'react-003', name: 'React Stickers', keywords: ['stickers react', 'react stickers'], exactMatches: ['stickers'] },
+    { id: 'react-004', name: 'React Mug', keywords: ['taza react', 'react mug'], exactMatches: ['taza', 'mug'] }
   ];
 
   const products = tech === 'react' ? reactProducts : angularProducts;
 
-  // Buscar coincidencias de productos
+  // Primero buscar coincidencias exactas con tecnología
   for (const product of products) {
     for (const keyword of product.keywords) {
       if (promptLower.includes(keyword)) {
-        // Verificar que también mencione la tecnología
+        console.log(`🎯 [API] Exact product match found: ${product.name} for keyword: ${keyword}`);
+        return {
+          productId: product.id,
+          productName: product.name,
+          description: `Es un excelente producto ${tech} que te va a encantar.`
+        };
+      }
+    }
+  }
+
+  // Si no hay coincidencia exacta, buscar palabras clave + mención de tecnología
+  for (const product of products) {
+    for (const exactMatch of product.exactMatches) {
+      if (promptLower.includes(exactMatch)) {
         const mentionsTech = promptLower.includes(tech.toLowerCase()) ||
                             promptLower.includes('de ' + tech.toLowerCase()) ||
                             promptLower.includes(tech.toLowerCase() + ' ');
 
-        if (mentionsTech || tech === 'angular') { // Para Angular, asumir si no especifica
+        if (mentionsTech) {
+          console.log(`🎯 [API] Product match with tech: ${product.name} for keyword: ${exactMatch}`);
           return {
             productId: product.id,
             productName: product.name,
@@ -367,6 +406,7 @@ function detectProductRequest(prompt, tech) {
     }
   }
 
+  console.log(`❌ [API] No product detected in prompt: "${prompt}"`);
   return null;
 }
 
