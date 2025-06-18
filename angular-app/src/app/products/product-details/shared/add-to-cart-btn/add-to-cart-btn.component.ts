@@ -7,9 +7,9 @@ import {
   input,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ButtonComponent } from '@ngx-templates/shared/button';
 import { IconComponent } from '@ngx-templates/shared/icon';
 import { ToastsService } from '@ngx-templates/shared/toasts';
-import { ButtonComponent } from '@ngx-templates/shared/button';
 
 import { Product } from '../../../../../models';
 import { CartService } from '../../../../data-access/cart.service';
@@ -50,11 +50,18 @@ export class AddToCartBtnComponent implements OnInit {
 
     if (nextQuantity <= this.maxQuantity()) {
       this._toasts.create(
-        `${this.product().name} has been added to your cart!`,
+        `¡${this.product().name} agregado al carrito! (Cantidad: ${quantity})`,
       );
+
+      // Mensaje de seguimiento después de un breve delay
+      setTimeout(() => {
+        this._toasts.create(
+          `¿Te interesa algo más? Explora más productos increíbles 😊`
+        );
+      }, 2000);
     } else {
       this._toasts.create(
-        `Maximal product quantity of ${this.maxQuantity()} reached.`,
+        `Cantidad máxima de ${this.maxQuantity()} productos alcanzada.`,
       );
     }
   }

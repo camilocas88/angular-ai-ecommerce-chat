@@ -85,7 +85,7 @@ export default async function handler(req, res) {
 
 ¡Excelente elección! Este producto es uno de nuestros favoritos. ¿Te gustaría agregar algo más o necesitas ayuda con otra cosa?`,
         action: {
-          type: 'add_to_cart',
+          type: 'addToCart',
           params: {
             productId: productRequest.productId,
             productName: productRequest.productName,

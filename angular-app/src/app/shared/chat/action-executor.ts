@@ -36,19 +36,22 @@ export class ActionExecutor {
   ) {}
 
   async executeAction(action: Action) {
-    console.log('🔧 Executing action:', action);
+    console.log('🔧 [ActionExecutor] Executing action:', action);
+    console.log('🔧 [ActionExecutor] Action type:', action.type);
+    console.log('🔧 [ActionExecutor] Action params:', action.params);
 
     try {
       switch (action.type) {
         case 'addToCart':
         case 'add_to_cart':
+          console.log('🛒 [ActionExecutor] Processing add to cart action');
           await this.handleAddToCart(action.params);
           break;
         default:
-          console.warn('⚠️ Unknown action type:', action.type);
+          console.warn('⚠️ [ActionExecutor] Unknown action type:', action.type);
       }
     } catch (error) {
-      console.error('❌ Error executing action:', error);
+      console.error('❌ [ActionExecutor] Error executing action:', error);
       this.toastsService.create('Error agregando producto al carrito. Inténtalo de nuevo.');
     }
   }
@@ -59,6 +62,8 @@ export class ActionExecutor {
     productName?: string;
     quantity: number;
   }) {
+    console.log('🛒 [ActionExecutor] handleAddToCart called with params:', params);
+
     // Intentar obtener el ID del producto de varias formas
     let productId = params.productId || params.id;
 
@@ -66,16 +71,16 @@ export class ActionExecutor {
     if (!productId && params.productName) {
       const normalizedName = params.productName.toLowerCase().trim();
       productId = this.productNameToId[normalizedName];
-      console.log(`🔍 Looking up product ID by name "${normalizedName}": ${productId}`);
+      console.log(`🔍 [ActionExecutor] Looking up product ID by name "${normalizedName}": ${productId}`);
     }
 
     if (!productId) {
-      console.error('❌ Could not determine product ID from params:', params);
+      console.error('❌ [ActionExecutor] Could not determine product ID from params:', params);
       this.toastsService.create('Error: No se pudo identificar el producto.');
       return;
     }
 
-    console.log(`🛒 Adding to cart: Product ID ${productId}, Quantity: ${params.quantity}`);
+    console.log(`🛒 [ActionExecutor] Adding to cart: Product ID ${productId}, Quantity: ${params.quantity}`);
 
     try {
       // Obtener el producto
@@ -95,10 +100,17 @@ export class ActionExecutor {
       this.cartService.addToCart(product, quantity);
       console.log('✅ Product added to cart successfully');
 
-      // Mostrar notificación de éxito
+      // Mostrar notificación de éxito y mensaje de seguimiento
       this.toastsService.create(
         `¡${product.name} agregado al carrito! (Cantidad: ${quantity})`
       );
+
+      // Agregar un mensaje de seguimiento después de un breve delay
+      setTimeout(() => {
+        this.toastsService.create(
+          `¿Te interesa algo más? Tenemos muchos otros productos increíbles que podrían gustarte 😊`
+        );
+      }, 2000);
 
     } catch (error) {
       console.error('❌ Error in handleAddToCart:', error);

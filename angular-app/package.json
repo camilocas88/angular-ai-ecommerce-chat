@@ -21,7 +21,8 @@
     "deploy:preview": "vercel",
     "setup-ci": "chmod +x ../setup-ci-cd.sh && ../setup-ci-cd.sh",
     "commit": "git add . && git commit",
-    "release": "git add . && git commit && git push origin main"
+    "release": "git add . && git commit && git push origin main",
+    "quick": "chmod +x quick-commit.sh && ./quick-commit.sh"
   },
   "keywords": [
     "angular",
