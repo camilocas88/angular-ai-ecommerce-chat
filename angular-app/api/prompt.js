@@ -59,10 +59,15 @@ export default async function handler(req, res) {
        promptLower.includes('agregar') || promptLower.includes('quiero') ||
        promptLower.includes('comprar'));
 
+    // NUEVA LÓGICA: Si el usuario dice "sí" y no tenemos producto en este mensaje,
+    // asumir que quiere la camiseta Angular (producto más popular)
+    const isSimpleYesForAngularShirt = isSimpleConfirmation && !productRequest && !isNewUser;
+
     console.log('🔍 [API] Intent analysis:', {
       userIntent,
       isSimpleConfirmation,
       isProductConfirmation,
+      isSimpleYesForAngularShirt,
       hasProductRequest: !!productRequest,
       productName: productRequest?.productName
     });
@@ -75,6 +80,25 @@ export default async function handler(req, res) {
         action: null,
         error: null,
         userName: detectedName
+      };
+    } else if (isSimpleYesForAngularShirt) {
+      // Usuario dice "sí" sin mencionar producto específico - agregar Angular T-shirt por defecto
+      console.log(`🛒 [API] User said YES without specific product, adding Angular T-shirt by default`);
+      const enthusiasm = getEnthusiasticResponse();
+      response = {
+        message: `${enthusiasm} ${userName}! ¡Perfecto! Te agrego **Angular T-shirt** a tu carrito ahora mismo 🛒✨
+
+¡Excelente elección! Esta camiseta es uno de nuestros productos más populares. ¿Te gustaría agregar algo más o necesitas ayuda con otra cosa?`,
+        action: {
+          type: 'addToCart',
+          params: {
+            productId: '6631',
+            productName: 'Angular T-shirt',
+            quantity: 1
+          }
+        },
+        error: null,
+        userName: userName
       };
     } else if (isProductConfirmation && !isNewUser) {
       // Usuario confirma compra de producto específico - AGREGAR AL CARRITO
